@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Index
+{% endblock %}
+
+{% block main %}
+<div id="map"></div>
+<div id="infowindow-content">
+    <span id="place-name" class="title"></span><br />
+    <strong>Place ID:</strong> <span id="place-id"></span><br />
+    <span id="place-address"></span>
+</div>
+<div id="bar">
+    <p class="auto"><input type="text" id="autoc"/></p>
+    <p><a id="clear" href="#">Click here</a> to clear map.</p>
+    <p id="addLocation"><a href="#">Add location</a></p>
+</div>
+<button id='showLine'>Show line</button>
+<button id="hideLine">Hide line</button>
+{% endblock %}
+
+{% block head %}
+<script src="https://www.gstatic.com/external_hosted/jquery2.min.js"></script>
+<script defer
+src="https://maps.googleapis.com/maps/api/js?sens=false&key=AIzaSyBpK48FTBTt7tG8DGAhA4O8PQb-dRsxY74&callback=initialize&libraries=places&v=weekly"></script>
+<script src="/static/js/index.js"></script>
+{% endblock %}
