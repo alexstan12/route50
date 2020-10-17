@@ -3,16 +3,40 @@ var apiKey = 'AIzaSyBpK48FTBTt7tG8DGAhA4O8PQb-dRsxY74';
 var map;
 var placeIdArray = [];
 var locations =[];
-let markers =[];
+var all_locations = []; // to be stored in localStorage, for user to regain entered locations | won't get
+                        // erased when new route is calculated
+var markers =[];
+var all_markers_position = []; // same as all_locations | can't save entire marker object
+                               // so just position and total length will be saved
 var parts = [];
 var gRenderers = [];
 var renderer;
 var service;
 var count = 0;
 var delayFactor = 0;
+var coords;
+const image ="https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"; //flag img for waypoints
 //window.gRenderers = [];
 
 function initialize() {
+
+    if(localStorage.getItem("all_locations")!= null){
+        locations = JSON.parse(localStorage.getItem("all_locations"));
+        all_locations.push(...locations);
+        var x = document.getElementById("previous-content"); // reminder for user that previous data can be shown
+        x.style.display = "block";
+        setTimeout(function () {   // timeout to automatically close the alert box
+  
+            // Closing the alert 
+            $('#previous-content').alert('close'); 
+        }, 5000); 
+    
+
+    }
+    if(localStorage.getItem("all_markers_position")!=null){
+        all_markers_position = JSON.parse(localStorage.getItem("all_markers_position"));
+    }
+
   var mapOptions = {
     zoom: 1,
     mapTypeId: google.maps.MapTypeId.ROADMAP,
@@ -60,57 +84,99 @@ function initialize() {
         infowindow.close();
       }
     
-    var place = autocomplete.getPlace();
-    var coords = place.geometry.location;
+    place = autocomplete.getPlace();
+    coords = place.geometry.location;
     bounds.extend(coords);
-    if (place.geometry.viewport) {
-      //map.fitBounds(place.geometry.viewport);
-      var marker = new google.maps.Marker({
-        position: coords,
-        map:map,
-      });
-      google.maps.event.addListener(marker,"click", function(){
-        infowindowContent.children.namedItem("place-name").textContent = place.name;
-        infowindowContent.children.namedItem("place-address").textContent = place.formatted_address;
-        infowindowContent.children.namedItem("place-id").textContent = place.place_id;  
-        infowindow.open(map,marker);
-        google.maps.event.addListener(map,"click", function(){
-            infowindow.close();
-        });
-      });
-      markers.push(marker);
-    } /*else {
+     /*else {
       map.setCenter(place.geometry.location);
       map.setZoom(17);
     }*/
-    if(locations==null){
+    if(locations == null){
         locations=[];
     }
     if(parts == null){
         parts=[];
     }
-    // Enables posibility of adding addresses for final route calculation
-    document.getElementById("addLocation").addEventListener('click', (function(locations){
-        console.log(locations.length);
-        locations.push(coords);
-    })(locations)); 
-    console.log(locations);
-    // slicing locations into multiple parts so that directions renderer can be applied to multiple locations
-    for(var i=0, max= 25-1; i<locations.length; i= i+max){
-        parts.push(locations.slice(i, i+max+1));
-    }
+   
+    //console.log(locations);
+   
     map.fitBounds(bounds);
     
     });
+     // Enables posibility of adding addresses when a user clicks a map location
+     map.addListener('click', function(e){
+         click_location = e.latLng;
+         locations.push(click_location);
+         console.log(all_locations); //debug
+         all_locations.push(click_location);
+         console.log(all_locations); //debug 
+         localStorage.setItem('all_locations', JSON.stringify(all_locations));
+         console.log(click_location, locations.length);
+         place_marker(map,click_location);
+     }); 
+     // Enables posibility of adding addresses for final route calculation
+     document.getElementById('addLocation').addEventListener('click', add_location, false); 
+
+    function place_marker(map, location){
+        var marker = new google.maps.Marker({
+            position: location,
+            map: map
+        });
+        markers.push(marker);
+        all_markers_position.push(marker.position); // positions needed for markers reconstruction on page reload
+        localStorage.setItem("all_markers_position", JSON.stringify(all_markers_position));
+        localStorage.setItem("markers_length", JSON.stringify(markers.length));
+        map.panTo(location);
+    }
+    
+    function add_location(){
+        if (place.geometry.viewport) {
+            //map.fitBounds(place.geometry.viewport);
+            var marker = new google.maps.Marker({
+              position: coords,
+              map:map,
+            });
+            google.maps.event.addListener(marker,"click", function(){
+              infowindowContent.children.namedItem("place-name").textContent = place.name;
+              infowindowContent.children.namedItem("place-address").textContent = place.formatted_address;
+              infowindowContent.children.namedItem("place-id").textContent = place.place_id;  
+              infowindow.open(map,marker);
+              google.maps.event.addListener(map,"click", function(){
+                  infowindow.close();
+              });
+            });
+            markers.push(marker);
+            all_markers_position.push(marker.position); // positions needed for markers reconstruction on page reload
+            localStorage.setItem("all_markers_position", JSON.stringify(all_markers_position));
+            localStorage.setItem("markers_length", JSON.stringify(markers.length));
+            
+          }
+
+        console.log(locations.length);
+        locations.push(coords);
+        all_locations.push(coords);
+        localStorage.setItem('all_locations', JSON.stringify(all_locations));
+        //alert("Test successful");
+    }(locations/*, all_locations*/);
+
     function calculateRoute(){
-          
+        
+        console.log(locations);
+        parts=[];
+        // slicing locations into multiple parts so that directions renderer can be applied to multiple locations
+        for(var i=0, max= 25-1; i<locations.length; i= i+max){
+            parts.push(locations.slice(i, i+max+1));
+        }
+        var lastLocation = locations[locations.length-1];
+        locations=[]; // empty locations so renderer won't have to calculate the route from the beggining
+        locations.push(lastLocation); // add last location to start a new route with it
         // output parts for debugging purposes
         console.log(parts);
         for (var i = 0; i < parts.length; i++) {
             // Waypoints does not include first station (origin) and last station (destination)
             var waypoints = [];
             for (var j = 1; j < parts[i].length-1; j++)
-                waypoints.push({location: parts[i][j], stopover: false});
+                waypoints.push({location: parts[i][j], stopover: true});
 
                 /*if((j+1)<parts[i].length){
                     var src = parts[i][j];
@@ -129,7 +195,7 @@ function initialize() {
                 origin: parts[i][0],
                 destination: parts[i][parts[i].length - 1],
                 waypoints: waypoints,
-                //optimizeWaypoints: true,
+                optimizeWaypoints: true,
                 travelMode: 'DRIVING'
             };
             // Send request
@@ -141,11 +207,35 @@ function initialize() {
     function m_get_directions_route(service_options){
         service.route(service_options, function(response, status){
         if(status == "OK"){
+            var iconsetngs = {
+                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                fillOpacity: 1,
+                scale: 3
+                };
+            var polylineoptns = new google.maps.Polyline({
+                fillOpacity: 1,
+                strokeOpacity: 0.8,
+                strokeWeight: 3,
+                strokeColor: '#4986E7',
+                icons: [{
+                    repeat: '100px', //CHANGE THIS VALUE TO CHANGE THE DISTANCE BETWEEN ARROWS
+                    icon: iconsetngs,
+                    offset: '100%'
+                }]
+            });
+            renderer = new google.maps.DirectionsRenderer({panel: document.getElementById('right-panel')}/*{
+                polylineOptions: polylineoptns,
+                suppressMarkers: true
+            }*/);
             renderer.setOptions({ suppressMarkers: true, preserveViewport: true });
             renderer.setDirections(response);
+            //if(gRenderers.length == 1){ // let gRenderers setMap if length!=1
+                renderer.setMap(map); // adding this line enables route to be accesed on first press of "Show Line"
+                console.log(renderer);
+            //}
             // save renderer in variable gRenderers so that it can be used later
             gRenderers.push(renderer);
-            console.log(renderer);
+            
             /*
             //Initialize the Path Array
             var path = new google.maps.MVCArray();
@@ -184,18 +274,24 @@ function initialize() {
     // Clear button. Click to remove all markers.
     document.getElementById('clear').addEventListener('click', function(event) {
         setMapOnAll(null);
+        localStorage.removeItem('all_locations');
+        localStorage.removeItem("all_markers_position");
+        localStorage.removeItem("markers_length");
+        markers=[];
         locations=[];
+        all_markers_position=[];
+        all_locations=[];
         parts=[];
         console.log(locations);
         console.log(parts);
-        /*gRenderers.forEach(r=>{
+        gRenderers.forEach(r=>{
             r.setMap(null);
-        });*/
-        //gRenderers = [];
+        });
+        gRenderers = [];
         /*renderer.forEach(r=>{
             r.setDirections(null);
         });*/
-        renderer.setMap(null);
+        //renderer.setMap(null);
         //renderer = null;
         //renderer = new google.maps.DirectionsRenderer();
         
@@ -203,27 +299,52 @@ function initialize() {
 
     // function to show and hide route line
     document.getElementById('showLine').addEventListener('click', function(){
+        
         service = new google.maps.DirectionsService();
-        renderer = new google.maps.DirectionsRenderer();
-        renderer.setMap(map);
+        var x = document.getElementById("previous-content"); // alert for existing previous data
+        x.style.display = "none";
+        var y = document.getElementById("render-status"); // alert for route rendering
+        y.style.display = "block"
+        setTimeout(function () {   // timeout to automatically close the alert box
+  
+            // Closing the alert 
+            $('#render-status').alert('close'); 
+        }, 5000);
+        // Commenting next line of code to see if this causes multiple "renderings(setMap) on map"
+        //renderer.setMap(map);
         calculateRoute();
-        /*renderer.forEach(r => {
+        
+        if( markers.length == 0){
+            for(var i=0; i<JSON.parse(localStorage.getItem("markers_length"));i++){
+                markers[i] = new google.maps.Marker({
+                    position: all_markers_position[i],
+                    map: map
+                })
+                bounds.extend(markers[i].position);
+        }
+            map.fitBounds(bounds);    
+        }
+        /*gRenderers.forEach(r => {
             console.log(r);
             r.setMap(map);
         });*/
+        
+        for(var m=1; m< markers.length-1; m++){ // modify markers, except first and last
+            markers[m].setIcon(image);
+            
+        }
+        
     });
     document.getElementById('hideLine').addEventListener('click', function(){
-        /*renderer.forEach(r => {
+        gRenderers.forEach(r => {
             console.log(r);
             r.setMap(null);
-        });*/
-        if(renderer){
-            renderer.setMap(null);
-        }
+        });
     });
     
 }
 
 
 
-$(window).load(initialize);
+//$(window).load(initialize);
+//window.addEventListener("load", initialize);

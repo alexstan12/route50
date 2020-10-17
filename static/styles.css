@@ -114,3 +114,34 @@ main tfoot {
   #map #infowindow-content {
     display: inline;
   }
+
+  #map-block {
+    display: flex;
+    height: min-content;
+  }
+
+  #map {
+    height: 400px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+  #right-panel {
+    overflow-y: scroll;
+    direction: ltr;
+    width: 300px;
+    height: 400px;
+}
+
+  #right-panel:empty{
+      display: none;
+  }
+
+  #previous-content{
+      display: none;
+  }
+
+  #render-status{
+      display: none;
+  }

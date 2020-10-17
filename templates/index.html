@@ -5,7 +5,18 @@
 {% endblock %}
 
 {% block main %}
-<div id="map"></div>
+<div id="previous-content" class="alert alert-success alert-dismissible fade-in" role="alert">
+    <button type="button" class="close" data-dismiss="alert">&times;</button>
+    Previous data available! Click <strong>Show Line</strong> to render it.
+  </div>
+<div id="render-status" class="alert alert-warning alert-dismissible fade-in" role="alert">
+<button type="button" class="close" data-dismiss="alert">&times;</button>
+    Your route has been rendered!
+</div>
+<div id="map-block">
+    <div id="map"></div>
+    <div id="right-panel"></div>
+</div>
 <div id="infowindow-content">
     <span id="place-name" class="title"></span><br />
     <strong>Place ID:</strong> <span id="place-id"></span><br />
@@ -13,15 +24,16 @@
 </div>
 <div id="bar">
     <p class="auto"><input type="text" id="autoc"/></p>
-    <p><a id="clear" href="#">Click here</a> to clear map.</p>
-    <p id="addLocation"><a href="#">Add location</a></p>
+    <button id="clear" type="button" class="btn btn-danger"><strong>Click here</strong> to clear map</button>
 </div>
-<button id='showLine'>Show line</button>
+
+<button id="addLocation" type="button" class="btn btn-primary">Add Location</button>
+<button id='showLine' type="button" class="btn btn-success">Show line</button>
 <button id="hideLine">Hide line</button>
 {% endblock %}
 
 {% block head %}
-<script src="https://www.gstatic.com/external_hosted/jquery2.min.js"></script>
+
 <script defer
 src="https://maps.googleapis.com/maps/api/js?sens=false&key=AIzaSyBpK48FTBTt7tG8DGAhA4O8PQb-dRsxY74&callback=initialize&libraries=places&v=weekly"></script>
 <script src="/static/js/index.js"></script>
