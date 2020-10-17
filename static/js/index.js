@@ -19,7 +19,7 @@ const image ="https://developers.google.com/maps/documentation/javascript/exampl
 //window.gRenderers = [];
 
 function initialize() {
-
+    
     if(localStorage.getItem("all_locations")!= null){
         locations = JSON.parse(localStorage.getItem("all_locations"));
         all_locations.push(...locations);
@@ -28,7 +28,7 @@ function initialize() {
         setTimeout(function () {   // timeout to automatically close the alert box
   
             // Closing the alert 
-            $('#previous-content').alert('close'); 
+            $('#previous-content').slideUp(500); 
         }, 5000); 
     
 
@@ -42,43 +42,15 @@ function initialize() {
     mapTypeId: google.maps.MapTypeId.ROADMAP,
     center: {lat: -33.8667, lng: 151.1955,}
   };
-  /*
-  var service = new google.maps.DirectionsService();
-  if(renderer){
-      renderer.setMap(null);
-  }
-  renderer = new google.maps.DirectionsRenderer();*/
+
   map = new google.maps.Map(document.getElementById('map'), mapOptions);
   window.gMap = map;
   var bounds = new google.maps.LatLngBounds();
-/*
-  var iconsetngs = {
-    path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW
-    };
-    var polylineoptns = {
-        strokeOpacity: 0.8,
-        strokeWeight: 3,
-        strokeColor: '#4986E7',
-    
-        map: map,
-        icons: [{
-            repeat: '600px', //CHANGE THIS VALUE TO CHANGE THE DISTANCE BETWEEN ARROWS
-            icon: iconsetngs,
-            offset: '100%'
-        }]
-    };
-*/
-  // Adds a Places search box. Searching for a place will center the map on that
-  // location.
-  /*map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(
-      document.getElementById('bar'));*/
-  
   var autocomplete = new google.maps.places.Autocomplete(
       document.getElementById('autoc'));
   var infowindow = new google.maps.InfoWindow();
   var infowindowContent = document.getElementById("infowindow-content");
   infowindow.setContent(infowindowContent);    
-  //autocomplete.bindTo('bounds', map);
   autocomplete.addListener('place_changed', function() {
       if (!infowindowContent){
         infowindow.close();
@@ -87,18 +59,12 @@ function initialize() {
     place = autocomplete.getPlace();
     coords = place.geometry.location;
     bounds.extend(coords);
-     /*else {
-      map.setCenter(place.geometry.location);
-      map.setZoom(17);
-    }*/
     if(locations == null){
         locations=[];
     }
     if(parts == null){
         parts=[];
     }
-   
-    //console.log(locations);
    
     map.fitBounds(bounds);
     
@@ -178,18 +144,6 @@ function initialize() {
             for (var j = 1; j < parts[i].length-1; j++)
                 waypoints.push({location: parts[i][j], stopover: true});
 
-                /*if((j+1)<parts[i].length){
-                    var src = parts[i][j];
-                    var dest = parts[i][j+1];
-
-                    var service_options = {
-                        origin: src,
-                        destination: dest,
-                        travelMode: 'DRIVING'
-                    };
-                    m_get_directions_route(service_options);
-                    
-                }*/
             // Service options
             var service_options = {
                 origin: parts[i][0],
@@ -212,7 +166,7 @@ function initialize() {
                 fillOpacity: 1,
                 scale: 3
                 };
-            var polylineoptns = new google.maps.Polyline({
+            var polylineoptns = new google.maps.Polyline({ // never used, since somehow it only forks for last 2 locations
                 fillOpacity: 1,
                 strokeOpacity: 0.8,
                 strokeWeight: 3,
@@ -223,35 +177,16 @@ function initialize() {
                     offset: '100%'
                 }]
             });
-            renderer = new google.maps.DirectionsRenderer({panel: document.getElementById('right-panel')}/*{
-                polylineOptions: polylineoptns,
-                suppressMarkers: true
-            }*/);
+            renderer = new google.maps.DirectionsRenderer({panel: document.getElementById('right-panel')});
             renderer.setOptions({ suppressMarkers: true, preserveViewport: true });
             renderer.setDirections(response);
-            //if(gRenderers.length == 1){ // let gRenderers setMap if length!=1
                 renderer.setMap(map); // adding this line enables route to be accesed on first press of "Show Line"
                 console.log(renderer);
-            //}
+
             // save renderer in variable gRenderers so that it can be used later
             gRenderers.push(renderer);
-            
-            /*
-            //Initialize the Path Array
-            var path = new google.maps.MVCArray();
-            var poly = new google.maps.Polyline(polylineoptns);
-
-            poly.setPath(path);
-
-            for (var i = 0, len = response.routes[0].overview_path.length; i < len; i++) {
-                path.push(response.routes[0].overview_path[i]);
-            }
-            */
           }
           else if(status == google.maps.DirectionsStatus.OVER_QUERY_LIMIT) {
-              /*wait = true;
-              setTimeout("wait = true", 2000);
-              //alert("OQL: " + status);*/
               delayFactor++;
               setTimeout(function () {
                   m_get_directions_route(service_options);
@@ -287,14 +222,7 @@ function initialize() {
         gRenderers.forEach(r=>{
             r.setMap(null);
         });
-        gRenderers = [];
-        /*renderer.forEach(r=>{
-            r.setDirections(null);
-        });*/
-        //renderer.setMap(null);
-        //renderer = null;
-        //renderer = new google.maps.DirectionsRenderer();
-        
+        gRenderers = [];  
     });
 
     // function to show and hide route line
@@ -304,14 +232,13 @@ function initialize() {
         var x = document.getElementById("previous-content"); // alert for existing previous data
         x.style.display = "none";
         var y = document.getElementById("render-status"); // alert for route rendering
-        y.style.display = "block"
+        y.style.display = "block";
         setTimeout(function () {   // timeout to automatically close the alert box
   
             // Closing the alert 
-            $('#render-status').alert('close'); 
+            $('#render-status').slideUp(500); 
         }, 5000);
-        // Commenting next line of code to see if this causes multiple "renderings(setMap) on map"
-        //renderer.setMap(map);
+
         calculateRoute();
         
         if( markers.length == 0){
@@ -335,16 +262,10 @@ function initialize() {
         }
         
     });
-    document.getElementById('hideLine').addEventListener('click', function(){
-        gRenderers.forEach(r => {
-            console.log(r);
-            r.setMap(null);
-        });
-    });
     
+    $("#route-alerts").height($("#previous-content").height()*2); // the div containing alerts has to keep constant height
+                                                                  // in order for content to stay in place 
 }
 
 
 
-//$(window).load(initialize);
-//window.addEventListener("load", initialize);

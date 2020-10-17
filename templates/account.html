@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Log In
+{% endblock %}
+
+{% block main %}
+    <form action="/account" method="post" class="float-middle" style="margin-top: 50px;">
+        <div class="form-group">
+            <input autocomplete="off" autofocus class="form-control" name="old_password" placeholder="Old Password" type="Password">
+        </div>
+        <div class="form-group">
+            <input autocomplete="off" class="form-control" name="new_password" placeholder="New Password" type="password">
+        </div>
+         <div class="form-group">
+            <input autocomplete="off" class="form-control" name="retype_new_password" placeholder="Re-type New Password" type="password">
+        </div>
+        <button class="btn btn-primary" type="submit">Change password</button>
+    </form>
+    
+    
+{% endblock %}

@@ -5,13 +5,15 @@
 {% endblock %}
 
 {% block main %}
-<div id="previous-content" class="alert alert-success alert-dismissible fade-in" role="alert">
+<div id="route-alerts">
+    <div id="previous-content" class="alert alert-success alert-dismissible fade-in" role="alert">
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        Previous data available! Click <strong>Show Line</strong> to render it.
+    </div>
+    <div id="render-status" class="alert alert-warning alert-dismissible fade-in" role="alert">
     <button type="button" class="close" data-dismiss="alert">&times;</button>
-    Previous data available! Click <strong>Show Line</strong> to render it.
-  </div>
-<div id="render-status" class="alert alert-warning alert-dismissible fade-in" role="alert">
-<button type="button" class="close" data-dismiss="alert">&times;</button>
-    Your route has been rendered!
+        Your route has been rendered!
+    </div>
 </div>
 <div id="map-block">
     <div id="map"></div>
@@ -24,12 +26,11 @@
 </div>
 <div id="bar">
     <p class="auto"><input type="text" id="autoc"/></p>
-    <button id="clear" type="button" class="btn btn-danger"><strong>Click here</strong> to clear map</button>
+    <button id="clear" type="button" class="btn btn-danger">Clear map</button>
+    <button id="addLocation" type="button" class="btn btn-primary">Add Location</button>
+    <button id='showLine' type="button" class="btn btn-success">Show line</button>
 </div>
 
-<button id="addLocation" type="button" class="btn btn-primary">Add Location</button>
-<button id='showLine' type="button" class="btn btn-success">Show line</button>
-<button id="hideLine">Hide line</button>
 {% endblock %}
 
 {% block head %}
