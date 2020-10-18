@@ -1,4 +1,4 @@
-var apiKey = 'AIzaSyBpK48FTBTt7tG8DGAhA4O8PQb-dRsxY74';
+
 
 var map;
 var placeIdArray = [];
