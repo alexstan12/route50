@@ -21,6 +21,8 @@ Here is a quick view of its functionality:
 
 [![Watch the video](https://img.youtube.com/vi/gjCzBCc-Zt8/maxresdefault.jpg)](https://youtu.be/gjCzBCc-Zt8)
 
+![Responsiveness](./responsive.png)
+
 ## Technologies
 The main technologies used are:
 * Python 3 - version 3.8.5
